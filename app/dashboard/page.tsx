@@ -13,14 +13,46 @@ import {
     ArrowUp
 } from 'lucide-react';
 import { SignInButton } from '@clerk/nextjs';
+import ChartComponent from '@/components/ChartComponent';
 
 // Types for our chat interface
+type ChartData = {
+    type: 'Area' | 'Bar' | 'Candlestick' | 'Baseline' | 'Line';
+    data: any[];
+    title?: string;
+};
+
 type Message = {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
     isThinking?: boolean;
+    chart?: ChartData;
+};
+
+// Helper to generate mock chart data
+const generateMockData = (type: string, count = 100) => {
+    let data = [];
+    let time = new Date('2023-01-01').getTime() / 1000;
+    let value = 50;
+
+    for (let i = 0; i < count; i++) {
+        time += 86400; // 1 day
+        const change = (Math.random() - 0.5) * 2;
+        value += change;
+
+        if (type === 'Candlestick' || type === 'Bar') {
+            const open = value + Math.random() * 0.5;
+            const close = value - Math.random() * 0.5;
+            const high = Math.max(open, close) + Math.random();
+            const low = Math.min(open, close) - Math.random();
+            data.push({ time: time as any, open, high, low, close });
+        } else {
+            data.push({ time: time as any, value });
+        }
+    }
+    return data;
 };
 
 export default function DashboardPage() {
@@ -70,13 +102,37 @@ export default function DashboardPage() {
             textareaRef.current.focus();
         }
 
+        // Determine if we should show a chart based on keywords
+        const lowerText = text.toLowerCase();
+        const showChart = lowerText.includes('chart') || lowerText.includes('price') || lowerText.includes('btc') || lowerText.includes('eth') || lowerText.includes('analysis');
+
+        let chartType: ChartData['type'] = 'Area';
+        if (lowerText.includes('candle')) chartType = 'Candlestick';
+        else if (lowerText.includes('bar')) chartType = 'Bar';
+        else if (lowerText.includes('line')) chartType = 'Line';
+
         // Simulate AI response
         setTimeout(() => {
+            let content = "I've analyzed the market data for you.";
+            let chart: ChartData | undefined;
+
+            if (showChart) {
+                chart = {
+                    type: chartType,
+                    data: generateMockData(chartType),
+                    title: 'BTC/USD Market Analysis' // Mock title
+                };
+                content = `Here is the ${chartType.toLowerCase()} chart based on the recent price action.`;
+            } else {
+                content = "I'm analyzing the market parameters based on your request. This is a simulated response designed to demonstrate the UI capabilities.";
+            }
+
             const newAiMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: "I'm analyzing the market parameters based on your request. This is a simulated response designed to demonstrate the UI capabilities.",
-                timestamp: new Date()
+                content,
+                timestamp: new Date(),
+                chart
             };
             setMessages(prev => [...prev, newAiMsg]);
             setIsTyping(false);
@@ -99,7 +155,7 @@ export default function DashboardPage() {
                 { title: 'Market Sentiment', desc: 'Scan recent news for BTC' },
                 { title: 'Backtest Strategy', desc: 'RSI divergence on ETH 4h' },
                 { title: 'Risk Analysis', desc: 'Evaluate portfolio volatility' },
-                { title: 'Explain Concept', desc: 'How does gamma scalping work?' },
+                { title: 'Explain Concept (Candle)', desc: 'Show me a candlestick chart' },
             ].map((item, idx) => (
                 <button
                     key={idx}
@@ -139,18 +195,32 @@ export default function DashboardPage() {
                     ) : (
                         <div className="flex flex-col gap-6 py-6 pt-12">
                             {messages.map((msg) => (
-                                <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start max-w-3xl'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                                <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start max-w-3xl w-full'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                                     {msg.role === 'assistant' && (
                                         <div className="w-7 h-7 rounded-sm flex-shrink-0 mt-0.5 border border-[#333333]/0 flex items-center justify-center">
                                             <Image src="/flux.svg" alt="AI" width={16} height={16} className="w-4 h-4 brightness-150 opacity-80" />
                                         </div>
                                     )}
 
-                                    <div className={`relative px-4 py-2.5 max-w-[85%] md:max-w-[75%] rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
-                                            ? 'bg-[#2A2A2A] text-[#ECECEC]'
-                                            : 'text-[#D1D1D1]'
-                                        }`}>
-                                        {msg.content}
+                                    <div className={`flex flex-col gap-3 relative max-w-[90%] md:max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start w-full'}`}>
+                                        <div className={`px-4 py-2.5 rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
+                                                ? 'bg-[#2A2A2A] text-[#ECECEC]'
+                                                : 'text-[#D1D1D1] w-full'
+                                            }`}>
+                                            {msg.content}
+                                        </div>
+                                        {msg.chart && (
+                                            <div className="w-full mt-2 animate-in fade-in zoom-in-95 duration-500">
+                                                <div className="mb-2 text-xs text-[#888888] uppercase tracking-wider font-medium ml-1">
+                                                    {msg.chart.title || 'Chart Analysis'}
+                                                </div>
+                                                <ChartComponent
+                                                    data={msg.chart.data}
+                                                    type={msg.chart.type}
+                                                    height={320}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

@@ -82,7 +82,7 @@ export default function DashboardLayout({
                 <div className="px-4 h-14 flex items-center justify-between flex-shrink-0">
                     {/* Logo/Brand for Sidebar */}
                     <div className="opacity-40 hover:opacity-100 transition-opacity cursor-default hidden md:block pl-2">
-                        <Image src="/flux.svg" alt="OpenFlux" width={60} height={60} className="w-30 h-30 brightness-200 mb-10 mt-10" />
+                        <Image src="/flux.svg" alt="OpenFlux" width={30} height={30} className="w-30 h-30 brightness-200 mb-10 mt-10" />
                     </div>
 
                     <button
