@@ -41,35 +41,12 @@ type Message = {
     strategyId?: number;
 };
 
-// Helper to generate mock chart data - REMOVED, using API now
-// const generateMockData = (type: string, count = 100) => {
-//     let data = [];
-//     let time = new Date('2023-01-01').getTime() / 1000;
-//     let value = 50;
-
-//     for (let i = 0; i < count; i++) {
-//         time += 86400; // 1 day
-//         const change = (Math.random() - 0.5) * 2;
-//         value += change;
-
-//         if (type === 'Candlestick' || type === 'Bar') {
-//             const open = value + Math.random() * 0.5;
-//             const close = value - Math.random() * 0.5;
-//             const high = Math.max(open, close) + Math.random();
-//             const low = Math.min(open, close) - Math.random();
-//             data.push({ time: time as any, open, high, low, close });
-//         } else {
-//             data.push({ time: time as any, value });
-//         }
-//     }
-//     return data;
-// };
-
 export default function DashboardPage() {
     const { user } = useUser();
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [greeting, setGreeting] = useState('');
 
     // Panel State
     const [selectedStrategy, setSelectedStrategy] = useState<{ results: MiningResults, chart: ChartData } | null>(null);
@@ -81,6 +58,14 @@ export default function DashboardPage() {
     // Auto-focus on mount
     useEffect(() => {
         textareaRef.current?.focus();
+    }, []);
+
+    // Greeting Logic
+    useEffect(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) setGreeting('Good morning');
+        else if (hour < 18) setGreeting('Good afternoon');
+        else setGreeting('Good evening');
     }, []);
 
     // Auto-resize textarea
@@ -119,7 +104,6 @@ export default function DashboardPage() {
 
         try {
             // Call Mock API
-            // In a real app, 'chat_id' would be dynamic
             const response = await mockApi.chat('123', text);
 
             // Initial Ack Message
@@ -158,8 +142,6 @@ export default function DashboardPage() {
 
         for (let i = 0; i < steps.length; i++) {
             await new Promise(r => setTimeout(r, 800)); // Simulate work
-            // Ideally we'd update a progress message here, 
-            // but for now let's just show typing...
         }
 
         // 2. Fetch Final Results
@@ -202,7 +184,7 @@ export default function DashboardPage() {
         }
     };
 
-    if (!user) return null; // Logic handled in layout/middleware
+    if (!user) return null;
 
     /* Suggestion Cards */
     const Suggestions = () => (
@@ -229,7 +211,6 @@ export default function DashboardPage() {
         <div className="flex flex-col h-full w-full max-w-4xl mx-auto relative">
             {/* Header (Minimal) */}
             <div className="absolute top-0 right-0 p-4 z-10">
-                {/* Could put model selector here like Claude */}
             </div>
 
             {/* Chat Area */}
@@ -237,9 +218,8 @@ export default function DashboardPage() {
                 <div className="min-h-full flex flex-col pb-6">
                     {messages.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-                            {/* Logo removed as requested to reduce "slop" */}
                             <h2 className="text-2xl font-medium text-[#ECECEC] mb-2 font-tasa animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                Good evening, {user.firstName}
+                                {greeting || 'Hello'}, {user.firstName}
                             </h2>
                             <p className="text-[#888888] text-center max-w-md mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
                                 Ready to mine new strategies?
@@ -263,8 +243,8 @@ export default function DashboardPage() {
                                         {/* Standard Text Message */}
                                         {!msg.results && (
                                             <div className={`px-4 py-2.5 rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
-                                                ? 'bg-[#2A2A2A] text-[#ECECEC]'
-                                                : 'text-[#D1D1D1] w-full'
+                                                    ? 'bg-[#2A2A2A] text-[#ECECEC]'
+                                                    : 'text-[#D1D1D1] w-full'
                                                 }`}>
                                                 {/* Render Markdown-like content (basic) */}
                                                 {msg.content.split('\n').map((line, i) => (
@@ -354,7 +334,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Input Area (Claude Style) */}
+            {/* Input Area */}
             <div className="w-full p-4 md:px-0 md:pb-6 relative z-10 flex-shrink-0">
                 <div className="max-w-3xl mx-auto bg-[#141414] border border-[#262626] rounded-2xl shadow-lg relative focus-within:ring-1 focus-within:ring-[#404040] transition-all duration-200">
                     <textarea
@@ -373,8 +353,8 @@ export default function DashboardPage() {
                             onClick={() => handleSendMessage()}
                             disabled={!inputValue.trim()}
                             className={`p-2 rounded-lg transition-all duration-200 ${inputValue.trim()
-                                ? 'bg-[#ECECEC] text-[#060010] hover:bg-white'
-                                : 'bg-[#262626] text-[#606060] cursor-not-allowed'
+                                    ? 'bg-[#ECECEC] text-[#060010] hover:bg-white'
+                                    : 'bg-[#262626] text-[#606060] cursor-not-allowed'
                                 }`}
                         >
                             <ArrowUp size={18} />
