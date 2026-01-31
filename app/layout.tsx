@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Chat with the markets. Turn strategies into validated returns in seconds.",
 };
 
+import SmoothScroller from "@/components/SmoothScroller";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +38,9 @@ export default function RootLayout({
         <body
           className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
         >
-          {children}
+          <SmoothScroller>
+            {children}
+          </SmoothScroller>
         </body>
       </html>
     </ClerkProvider>

@@ -31,6 +31,11 @@ export default function DashboardPage() {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Auto-focus on mount
+    useEffect(() => {
+        textareaRef.current?.focus();
+    }, []);
+
     // Auto-resize textarea
     useEffect(() => {
         if (textareaRef.current) {
@@ -45,13 +50,13 @@ export default function DashboardPage() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
-    const handleSendMessage = () => {
-        if (!inputValue.trim()) return;
+    const handleSendMessage = (text: string = inputValue) => {
+        if (!text.trim()) return;
 
         const newUserMsg: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: inputValue,
+            content: text,
             timestamp: new Date()
         };
 
@@ -59,8 +64,11 @@ export default function DashboardPage() {
         setInputValue('');
         setIsTyping(true);
 
-        // Reset height
-        if (textareaRef.current) textareaRef.current.style.height = 'auto';
+        // Reset height and focus
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.focus();
+        }
 
         // Simulate AI response
         setTimeout(() => {
@@ -95,8 +103,8 @@ export default function DashboardPage() {
             ].map((item, idx) => (
                 <button
                     key={idx}
-                    onClick={() => setInputValue(item.desc)}
-                    className="group p-4 bg-[#141414] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#333333] rounded-xl text-left transition-all duration-200"
+                    onClick={() => handleSendMessage(item.desc)}
+                    className="group p-4 bg-[#141414] hover:bg-[#1A1A1A] border border-[#262626] hover:border-[#333333] rounded-xl text-left transition-all duration-200 active:scale-[0.98]"
                 >
                     <div className="font-medium text-[#ECECEC] text-sm mb-1 group-hover:text-white">{item.title}</div>
                     <div className="text-xs text-[#888888] group-hover:text-[#A0A0A0]">{item.desc}</div>
@@ -110,9 +118,6 @@ export default function DashboardPage() {
             {/* Header (Minimal) */}
             <div className="absolute top-0 right-0 p-4 z-10">
                 {/* Could put model selector here like Claude */}
-                {/* <div className="bg-[#141414] border border-[#262626] px-3 py-1.5 rounded-lg text-xs text-[#A0A0A0] font-medium flex items-center gap-2 cursor-pointer hover:text-[#ECECEC] transition-colors">
-                    Claude 3.5 Sonnet <ChevronDown size={12} />
-                </div> */}
             </div>
 
             {/* Chat Area */}
@@ -120,44 +125,44 @@ export default function DashboardPage() {
                 <div className="min-h-full flex flex-col pb-6">
                     {messages.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center -mt-20">
-                            {/* <div className="w-16 h-16 bg-[#141414] rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-[#1F1F1F]">
-                                <Image src="/flux.svg" alt="OpenFlux" width={32} height={32} className="brightness-200 opacity-90" />
-                            </div> */}
-                            <h2 className="text-2xl font-medium text-[#ECECEC] mb-2 font-tasa">
+                            {/* Logo removed as requested to reduce "slop" */}
+                            <h2 className="text-2xl font-medium text-[#ECECEC] mb-2 font-tasa animate-in fade-in slide-in-from-bottom-4 duration-700">
                                 Good evening, {user.firstName}
                             </h2>
-                            <p className="text-[#888888] text-center max-w-md mb-8">
+                            <p className="text-[#888888] text-center max-w-md mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
                                 Where should we start?
                             </p>
-                            <Suggestions />
+                            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 w-full flex justify-center">
+                                <Suggestions />
+                            </div>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-6 py-6 pt-12">
                             {messages.map((msg) => (
-                                <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start max-w-3xl'}`}>
+                                <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start max-w-3xl'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                                     {msg.role === 'assistant' && (
                                         <div className="w-7 h-7 rounded-sm flex-shrink-0 mt-0.5 border border-[#333333]/0 flex items-center justify-center">
                                             <Image src="/flux.svg" alt="AI" width={16} height={16} className="w-4 h-4 brightness-150 opacity-80" />
                                         </div>
                                     )}
 
-                                    <div className={`relative px-4 py-2.5 max-w-[85%] md:max-w-[75%] rounded-2xl text-[15px] leading-7 ${msg.role === 'user'
+                                    <div className={`relative px-4 py-2.5 max-w-[85%] md:max-w-[75%] rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
                                             ? 'bg-[#2A2A2A] text-[#ECECEC]'
-                                            : 'text-[#D1D1D1]' // Claude style: just text for AI
+                                            : 'text-[#D1D1D1]'
                                         }`}>
                                         {msg.content}
                                     </div>
                                 </div>
                             ))}
                             {isTyping && (
-                                <div className="flex gap-4 max-w-3xl">
+                                <div className="flex gap-4 max-w-3xl animate-in fade-in">
                                     <div className="w-7 h-7 rounded-sm flex-shrink-0 mt-0.5 flex items-center justify-center">
                                         <Image src="/flux.svg" alt="AI" width={16} height={16} className="w-4 h-4 brightness-150 opacity-80" />
                                     </div>
                                     <div className="flex items-center gap-1.5 h-7">
-                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-pulse"></div>
-                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-pulse [animation-delay:0.2s]"></div>
-                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-pulse [animation-delay:0.4s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                        <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-bounce"></div>
                                     </div>
                                 </div>
                             )}
@@ -178,6 +183,7 @@ export default function DashboardPage() {
                         placeholder="Talk to OpenFlux..."
                         className="w-full bg-transparent text-[#ECECEC] placeholder:text-[#606060] rounded-2xl px-4 py-3.5 pr-24 focus:outline-none resize-none overflow-hidden min-h-[52px] max-h-[200px] leading-relaxed"
                         style={{ height: '52px' }}
+                        autoFocus
                     />
 
                     <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -185,7 +191,7 @@ export default function DashboardPage() {
                             <Paperclip size={18} />
                         </button>
                         <button
-                            onClick={handleSendMessage}
+                            onClick={() => handleSendMessage()}
                             disabled={!inputValue.trim()}
                             className={`p-2 rounded-lg transition-all duration-200 ${inputValue.trim()
                                     ? 'bg-[#ECECEC] text-[#060010] hover:bg-white'

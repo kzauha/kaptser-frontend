@@ -34,8 +34,6 @@ export default function DashboardLayout({
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    // Filter "Settings" from sidebar if needed, but here we just show standard interactions
-
     // Mock History Data
     const history: Record<string, ChatSession[]> = {
         'Today': [
@@ -69,8 +67,9 @@ export default function DashboardLayout({
     const avatarUrl = `https://api.dicebear.com/9.x/dylan/svg?seed=${user.id}`;
     const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
 
-    // Check if we are in settings page (for highlighting)
+    // Check if we are in specific pages
     const isSettings = pathname?.includes('/settings');
+    const isChat = pathname === '/dashboard';
 
     return (
         <div className="flex h-screen bg-[#060010] text-[#ECECEC] overflow-hidden font-sans selection:bg-[#3E3E3F] selection:text-white">
@@ -81,38 +80,44 @@ export default function DashboardLayout({
             >
                 {/* Sidebar Header */}
                 <div className="px-4 h-14 flex items-center justify-between flex-shrink-0">
+                    {/* Logo/Brand for Sidebar */}
+                    <div className="opacity-40 hover:opacity-100 transition-opacity cursor-default hidden md:block pl-2">
+                        <Image src="/flux.svg" alt="OpenFlux" width={60} height={60} className="w-30 h-30 brightness-200 mb-10 mt-10" />
+                    </div>
+
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="md:hidden text-[#909090] hover:text-[#ECECEC] transition-colors"
                     >
                         <PanelLeftClose size={20} />
                     </button>
-                    {!sidebarOpen && <div className="w-6"></div>} {/* Spacer */}
                 </div>
 
                 {/* New Chat Button */}
                 <div className="px-4 mb-4">
                     <Link
                         href="/dashboard"
-                        className="flex items-center gap-2 bg-[#1A1A1A] hover:bg-[#252525] text-[#ECECEC] py-2.5 px-3 rounded-lg border border-[#333333] transition-all text-sm font-normal group shadow-sm"
+                        className={`flex items-center gap-2 py-2.5 px-3 rounded-lg border transition-all text-sm font-normal group shadow-sm ${isChat
+                                ? 'bg-[#1A1A1A] text-[#ECECEC] border-[#333333]'
+                                : 'bg-transparent text-[#909090] border-transparent hover:bg-[#1A1A1A] hover:text-[#ECECEC] hover:border-[#333333]'
+                            }`}
                     >
-                        <Plus size={16} className="text-[#909090] group-hover:text-[#ECECEC] transition-colors" />
+                        <Plus size={16} className={`${isChat ? 'text-[#ECECEC]' : 'text-[#909090] group-hover:text-[#ECECEC]'} transition-colors`} />
                         <span className="flex-1 text-left">New Chat</span>
                     </Link>
                 </div>
 
                 {/* History List */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin scrollbar-thumb-[#333333] scrollbar-track-transparent">
-                    <div className="px-2 pb-2 text-xs font-medium text-[#909090]/60">Recents</div>
+                    <div className="px-3 pb-2 text-[11px] font-medium text-[#606060] uppercase tracking-wider">Recents</div>
                     {Object.entries(history).map(([period, sessions]) => (
                         <div key={period} className="mb-4">
-                            {/* <h3 className="text-[10px] font-medium text-[#505050] px-3 mb-1 uppercase tracking-wider">{period}</h3> */}
                             <div className="space-y-0.5">
                                 {sessions.map((session) => (
                                     <Link
                                         key={session.id}
                                         href="/dashboard"
-                                        className="block w-full text-left px-3 py-2 rounded-md hover:bg-[#1A1A1A] text-sm text-[#B0B0B0] hover:text-[#ECECEC] transition-colors group truncate relative"
+                                        className="block w-full text-left px-3 py-2 rounded-md hover:bg-[#1A1A1A] text-[13px] text-[#A0A0A0] hover:text-[#ECECEC] transition-colors group truncate relative font-normal"
                                     >
                                         <span className="truncate block pr-6">{session.title}</span>
                                     </Link>
@@ -124,6 +129,11 @@ export default function DashboardLayout({
 
                 {/* User Profile / Bottom */}
                 <div className="p-2 border-t border-[#1F1F1F] bg-[#0D0D0D]">
+                    <div className="px-3 py-2 mb-2">
+                        <div className="w-full text-[10px] text-[#404040] text-center font-light uppercase tracking-wider">
+                            OpenFlux v0.1.0 (Beta)
+                        </div>
+                    </div>
 
                     <Link
                         href="/dashboard/settings"
@@ -137,7 +147,6 @@ export default function DashboardLayout({
                         <div className="flex-1 min-w-0 flex flex-col items-start">
                             <p className="text-sm font-medium text-[#ECECEC] truncate w-full flex items-center gap-2">
                                 {user.firstName}
-                                <span className="bg-[#2A2A2A] text-[#909090] text-[9px] px-1.5 py-0.5 rounded border border-[#333333]">PRO</span>
                             </p>
                         </div>
                         <Settings size={16} className={`text-[#606060] ${isSettings ? 'text-[#ECECEC]' : 'group-hover:text-[#ECECEC]'} transition-colors`} />
@@ -173,7 +182,7 @@ export default function DashboardLayout({
                         <button
                             onClick={() => setSidebarOpen(false)}
                             className="absolute -left-3 top-1/2 -translate-y-1/2 p-1 bg-[#0D0D0D] border border-[#1F1F1F] rounded-full text-[#505050] hover:text-[#ECECEC] transition-colors z-50 opacity-0 hover:opacity-100 group-hover:opacity-100"
-                            style={{ left: '-12px' }} // Positioning hack handled by parent
+                            style={{ left: '-12px' }} // Positioning hack
                         >
                         </button>
                     )}
