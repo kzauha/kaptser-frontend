@@ -4,62 +4,77 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useUser } from '@clerk/nextjs';
 import {
-    Send,
-    LogOut,
-    PanelLeftOpen,
     Paperclip,
-    Mic,
-    Sparkles,
-    ArrowUp
+    ArrowUp,
+    CheckCircle2,
+    Loader2,
+    BarChart2,
+    ArrowRight
 } from 'lucide-react';
-import { SignInButton } from '@clerk/nextjs';
 import ChartComponent from '@/components/ChartComponent';
+import { mockApi } from '@/lib/mock-api';
+import { ChatResponse, Candle, MiningResults } from '@/lib/api-types';
+import StrategyDetailsPanel from '@/components/StrategyDetailsPanel';
 
-// Types for our chat interface
+// Extend our internal Message type to store rich API data
 type ChartData = {
     type: 'Area' | 'Bar' | 'Candlestick' | 'Baseline' | 'Line';
     data: any[];
     title?: string;
 };
 
+type PipelineProgress = {
+    step: string;
+    status: 'RUNNING' | 'COMPLETED' | 'FAILED';
+    progress: number;
+};
+
+
 type Message = {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
-    isThinking?: boolean;
     chart?: ChartData;
+    progress?: PipelineProgress;
+    results?: MiningResults;
+    strategyId?: number;
 };
 
-// Helper to generate mock chart data
-const generateMockData = (type: string, count = 100) => {
-    let data = [];
-    let time = new Date('2023-01-01').getTime() / 1000;
-    let value = 50;
+// Helper to generate mock chart data - REMOVED, using API now
+// const generateMockData = (type: string, count = 100) => {
+//     let data = [];
+//     let time = new Date('2023-01-01').getTime() / 1000;
+//     let value = 50;
 
-    for (let i = 0; i < count; i++) {
-        time += 86400; // 1 day
-        const change = (Math.random() - 0.5) * 2;
-        value += change;
+//     for (let i = 0; i < count; i++) {
+//         time += 86400; // 1 day
+//         const change = (Math.random() - 0.5) * 2;
+//         value += change;
 
-        if (type === 'Candlestick' || type === 'Bar') {
-            const open = value + Math.random() * 0.5;
-            const close = value - Math.random() * 0.5;
-            const high = Math.max(open, close) + Math.random();
-            const low = Math.min(open, close) - Math.random();
-            data.push({ time: time as any, open, high, low, close });
-        } else {
-            data.push({ time: time as any, value });
-        }
-    }
-    return data;
-};
+//         if (type === 'Candlestick' || type === 'Bar') {
+//             const open = value + Math.random() * 0.5;
+//             const close = value - Math.random() * 0.5;
+//             const high = Math.max(open, close) + Math.random();
+//             const low = Math.min(open, close) - Math.random();
+//             data.push({ time: time as any, open, high, low, close });
+//         } else {
+//             data.push({ time: time as any, value });
+//         }
+//     }
+//     return data;
+// };
 
 export default function DashboardPage() {
     const { user } = useUser();
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
+
+    // Panel State
+    const [selectedStrategy, setSelectedStrategy] = useState<{ results: MiningResults, chart: ChartData } | null>(null);
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +97,7 @@ export default function DashboardPage() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
-    const handleSendMessage = (text: string = inputValue) => {
+    const handleSendMessage = async (text: string = inputValue) => {
         if (!text.trim()) return;
 
         const newUserMsg: Message = {
@@ -102,41 +117,82 @@ export default function DashboardPage() {
             textareaRef.current.focus();
         }
 
-        // Determine if we should show a chart based on keywords
-        const lowerText = text.toLowerCase();
-        const showChart = lowerText.includes('chart') || lowerText.includes('price') || lowerText.includes('btc') || lowerText.includes('eth') || lowerText.includes('analysis');
+        try {
+            // Call Mock API
+            // In a real app, 'chat_id' would be dynamic
+            const response = await mockApi.chat('123', text);
 
-        let chartType: ChartData['type'] = 'Area';
-        if (lowerText.includes('candle')) chartType = 'Candlestick';
-        else if (lowerText.includes('bar')) chartType = 'Bar';
-        else if (lowerText.includes('line')) chartType = 'Line';
-
-        // Simulate AI response
-        setTimeout(() => {
-            let content = "I've analyzed the market data for you.";
-            let chart: ChartData | undefined;
-
-            if (showChart) {
-                chart = {
-                    type: chartType,
-                    data: generateMockData(chartType),
-                    title: 'BTC/USD Market Analysis' // Mock title
-                };
-                content = `Here is the ${chartType.toLowerCase()} chart based on the recent price action.`;
-            } else {
-                content = "I'm analyzing the market parameters based on your request. This is a simulated response designed to demonstrate the UI capabilities.";
-            }
-
+            // Initial Ack Message
             const newAiMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content,
-                timestamp: new Date(),
-                chart
+                content: response.message,
+                timestamp: new Date()
             };
+
             setMessages(prev => [...prev, newAiMsg]);
             setIsTyping(false);
-        }, 1500);
+
+            // Handle Strategy Execution
+            if (response.action === 'RUN_STRATEGY' && response.strategy_id) {
+                await simulatePipelineExection(response.strategy_id);
+            }
+
+        } catch (error) {
+            console.error("API Error", error);
+            setIsTyping(false);
+        }
+    };
+
+    const simulatePipelineExection = async (strategyId: number) => {
+        setIsTyping(true);
+
+        // 1. Simulate Progress Updates
+        const steps = [
+            "Fetching OHLCV Data...",
+            "Calculating Features...",
+            "Running ZigZag...",
+            "Training Model...",
+            "Backtesting..."
+        ];
+
+        for (let i = 0; i < steps.length; i++) {
+            await new Promise(r => setTimeout(r, 800)); // Simulate work
+            // Ideally we'd update a progress message here, 
+            // but for now let's just show typing...
+        }
+
+        // 2. Fetch Final Results
+        const results = await mockApi.getResults(strategyId);
+        const candles = await mockApi.getCandles(strategyId);
+
+        // 3. Construct Result Message
+        const resultMsg: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: "**Mining Completed Successfully**",
+            timestamp: new Date(),
+            strategyId: strategyId,
+            chart: {
+                type: 'Area', // Use Area for the mini card chart
+                data: candles.candles,
+                title: 'Equity Simulation'
+            },
+            results: results // Pass full results
+        };
+
+        setMessages(prev => [...prev, resultMsg]);
+        setIsTyping(false);
+    };
+
+    const handleOpenDetails = (msg: Message) => {
+        if (msg.results && msg.chart) {
+            setSelectedStrategy({
+                results: msg.results,
+                chart: msg.chart
+            });
+            setIsPanelOpen(true);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -152,10 +208,10 @@ export default function DashboardPage() {
     const Suggestions = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 mt-12">
             {[
-                { title: 'Market Sentiment', desc: 'Scan recent news for BTC' },
-                { title: 'Backtest Strategy', desc: 'RSI divergence on ETH 4h' },
+                { title: 'Mine Strategy', desc: 'Mine BTC/USDT strategy' },
+                { title: 'Status Check', desc: 'Check pipeline status' },
                 { title: 'Risk Analysis', desc: 'Evaluate portfolio volatility' },
-                { title: 'Explain Concept (Candle)', desc: 'Show me a candlestick chart' },
+                { title: 'Explain Concept', desc: 'How does gamma scalping work?' },
             ].map((item, idx) => (
                 <button
                     key={idx}
@@ -170,7 +226,7 @@ export default function DashboardPage() {
     );
 
     return (
-        <div className="flex flex-col h-full w-full max-w-4xl mx-auto">
+        <div className="flex flex-col h-full w-full max-w-4xl mx-auto relative">
             {/* Header (Minimal) */}
             <div className="absolute top-0 right-0 p-4 z-10">
                 {/* Could put model selector here like Claude */}
@@ -186,7 +242,7 @@ export default function DashboardPage() {
                                 Good evening, {user.firstName}
                             </h2>
                             <p className="text-[#888888] text-center max-w-md mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
-                                Where should we start?
+                                Ready to mine new strategies?
                             </p>
                             <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 w-full flex justify-center">
                                 <Suggestions />
@@ -197,28 +253,84 @@ export default function DashboardPage() {
                             {messages.map((msg) => (
                                 <div key={msg.id} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start max-w-3xl w-full'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                                     {msg.role === 'assistant' && (
-                                        <div className="w-7 h-7 rounded-sm flex-shrink-0 mt-0.5 border border-[#333333]/0 flex items-center justify-center">
-                                            <Image src="/flux.svg" alt="AI" width={16} height={16} className="w-4 h-4 brightness-150 opacity-80" />
+                                        <div className="w-8 h-8 rounded-lg flex-shrink-0 mt-0.5 border border-[#333333]/0 flex items-center justify-center overflow-hidden">
+                                            <Image src="/fav.png" alt="AI" width={32} height={32} className="w-6 h-6 object-contain brightness-150 opacity-90" />
                                         </div>
                                     )}
 
-                                    <div className={`flex flex-col gap-3 relative max-w-[90%] md:max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start w-full'}`}>
-                                        <div className={`px-4 py-2.5 rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
+                                    <div className={`flex flex-col gap-3 relative max-w-[95%] md:max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start w-full'}`}>
+
+                                        {/* Standard Text Message */}
+                                        {!msg.results && (
+                                            <div className={`px-4 py-2.5 rounded-2xl text-[15px] leading-7 whitespace-pre-wrap ${msg.role === 'user'
                                                 ? 'bg-[#2A2A2A] text-[#ECECEC]'
                                                 : 'text-[#D1D1D1] w-full'
-                                            }`}>
-                                            {msg.content}
-                                        </div>
-                                        {msg.chart && (
-                                            <div className="w-full mt-2 animate-in fade-in zoom-in-95 duration-500">
-                                                <div className="mb-2 text-xs text-[#888888] uppercase tracking-wider font-medium ml-1">
-                                                    {msg.chart.title || 'Chart Analysis'}
+                                                }`}>
+                                                {/* Render Markdown-like content (basic) */}
+                                                {msg.content.split('\n').map((line, i) => (
+                                                    <div key={i} className={line.startsWith('-') ? 'ml-4' : ''}>
+                                                        {line.replace(/\*\*(.*?)\*\*/g, (_, p1) => p1)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Result Card (Rich UI) */}
+                                        {msg.results && (
+                                            <div className="w-full bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden shadow-lg animate-in fade-in zoom-in-95 duration-500 hover:border-[#333333] transition-colors">
+                                                {/* Card Header */}
+                                                <div className="px-5 py-4 border-b border-[#262626] flex justify-between items-center bg-[#1A1A1A]/50">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                                            <h3 className="text-[#ECECEC] font-medium text-sm">Strategy #mock-{msg.strategyId}</h3>
+                                                        </div>
+                                                        <p className="text-xs text-[#888888]">BTC/USDT • 4h Timeframe</p>
+                                                    </div>
+                                                    <div className="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-medium rounded uppercase tracking-wide border border-green-500/20">
+                                                        Deployable
+                                                    </div>
                                                 </div>
-                                                <ChartComponent
-                                                    data={msg.chart.data}
-                                                    type={msg.chart.type}
-                                                    height={320}
-                                                />
+
+                                                {/* Card Metrics */}
+                                                <div className="p-5 grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <p className="text-[11px] text-[#606060] uppercase tracking-wide font-medium mb-1">Net Profit</p>
+                                                        <p className={`text-xl font-medium ${msg.results.summary.net_profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            ${msg.results.summary.net_profit.toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] text-[#606060] uppercase tracking-wide font-medium mb-1">Win Rate</p>
+                                                        <p className="text-xl font-medium text-blue-400">
+                                                            {(msg.results.summary.win_rate * 100).toFixed(1)}%
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] text-[#606060] uppercase tracking-wide font-medium mb-1">Trades</p>
+                                                        <p className="text-lg text-[#ECECEC]">
+                                                            {msg.results.summary.total_trades}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] text-[#606060] uppercase tracking-wide font-medium mb-1">Profit Factor</p>
+                                                        <p className="text-lg text-[#ECECEC]">
+                                                            {msg.results.summary.profit_factor.toFixed(2)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Card Action */}
+                                                <div className="px-5 pb-5">
+                                                    <button
+                                                        onClick={() => handleOpenDetails(msg)}
+                                                        className="w-full py-2.5 bg-[#262626] hover:bg-[#333333] text-[#ECECEC] text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 group"
+                                                    >
+                                                        <BarChart2 size={16} className="text-[#888888] group-hover:text-[#ECECEC]" />
+                                                        View Full Analysis
+                                                        <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -226,8 +338,8 @@ export default function DashboardPage() {
                             ))}
                             {isTyping && (
                                 <div className="flex gap-4 max-w-3xl animate-in fade-in">
-                                    <div className="w-7 h-7 rounded-sm flex-shrink-0 mt-0.5 flex items-center justify-center">
-                                        <Image src="/flux.svg" alt="AI" width={16} height={16} className="w-4 h-4 brightness-150 opacity-80" />
+                                    <div className="w-8 h-8 rounded-lg flex-shrink-0 mt-0.5 flex items-center justify-center">
+                                        <Image src="/fav.png" alt="AI" width={32} height={32} className="w-6 h-6 object-contain brightness-150 opacity-80" />
                                     </div>
                                     <div className="flex items-center gap-1.5 h-7">
                                         <div className="w-1.5 h-1.5 bg-[#888888] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
@@ -257,15 +369,12 @@ export default function DashboardPage() {
                     />
 
                     <div className="absolute right-2 bottom-2 flex items-center gap-1">
-                        <button className="p-2 text-[#888888] hover:text-[#ECECEC] hover:bg-[#262626] rounded-lg transition-colors" title="Attach file">
-                            <Paperclip size={18} />
-                        </button>
                         <button
                             onClick={() => handleSendMessage()}
                             disabled={!inputValue.trim()}
                             className={`p-2 rounded-lg transition-all duration-200 ${inputValue.trim()
-                                    ? 'bg-[#ECECEC] text-[#060010] hover:bg-white'
-                                    : 'bg-[#262626] text-[#606060] cursor-not-allowed'
+                                ? 'bg-[#ECECEC] text-[#060010] hover:bg-white'
+                                : 'bg-[#262626] text-[#606060] cursor-not-allowed'
                                 }`}
                         >
                             <ArrowUp size={18} />
@@ -276,6 +385,15 @@ export default function DashboardPage() {
                     <p className="text-[10px] text-[#404040]">OpenFlux can make mistakes. Please verify execution logic.</p>
                 </div>
             </div>
+
+            {/* Slide-over Details Panel */}
+            <StrategyDetailsPanel
+                isOpen={isPanelOpen}
+                onClose={() => setIsPanelOpen(false)}
+                results={selectedStrategy?.results || null}
+                chartData={selectedStrategy?.chart}
+                title="Deep Dive Analysis"
+            />
         </div>
     );
 }
