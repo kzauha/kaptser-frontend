@@ -98,8 +98,8 @@ export default function DashboardLayout({
                     <Link
                         href="/dashboard"
                         className={`flex items-center gap-2 py-2.5 px-3 rounded-lg border transition-all text-sm font-normal group shadow-sm ${isChat
-                                ? 'bg-[#1A1A1A] text-[#ECECEC] border-[#333333]'
-                                : 'bg-transparent text-[#909090] border-transparent hover:bg-[#1A1A1A] hover:text-[#ECECEC] hover:border-[#333333]'
+                            ? 'bg-[#1A1A1A] text-[#ECECEC] border-[#333333]'
+                            : 'bg-transparent text-[#909090] border-transparent hover:bg-[#1A1A1A] hover:text-[#ECECEC] hover:border-[#333333]'
                             }`}
                     >
                         <Plus size={16} className={`${isChat ? 'text-[#ECECEC]' : 'text-[#909090] group-hover:text-[#ECECEC]'} transition-colors`} />
@@ -169,11 +169,12 @@ export default function DashboardLayout({
                 </div>
 
                 {/* Sidebar Toggle for Desktop (Absolute) */}
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 z-30 hidden md:block">
+                <div className="absolute top-1/2 left-0 -translate-y-1/2 z-30 hidden md:block group/toggle">
                     {!sidebarOpen && (
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="p-1 pr-2 bg-[#0D0D0D] border-y border-r border-[#1F1F1F] rounded-r-lg text-[#505050] hover:text-[#ECECEC] transition-colors"
+                            className="p-1 pr-2 bg-[#0D0D0D] border-y border-r border-[#1F1F1F] rounded-r-lg text-[#505050] hover:text-[#ECECEC] transition-colors shadow-lg"
+                            title="Expand Sidebar"
                         >
                             <span className="text-xs">›</span>
                         </button>
@@ -181,9 +182,11 @@ export default function DashboardLayout({
                     {sidebarOpen && (
                         <button
                             onClick={() => setSidebarOpen(false)}
-                            className="absolute -left-3 top-1/2 -translate-y-1/2 p-1 bg-[#0D0D0D] border border-[#1F1F1F] rounded-full text-[#505050] hover:text-[#ECECEC] transition-colors z-50 opacity-0 hover:opacity-100 group-hover:opacity-100"
-                            style={{ left: '-12px' }} // Positioning hack
+                            className="absolute -left-3 top-1/2 -translate-y-1/2 p-1 bg-[#0D0D0D] border border-[#1F1F1F] rounded-full text-[#505050] hover:text-[#ECECEC] transition-all z-50 opacity-0 group-hover/toggle:opacity-100 hover:scale-110 shadow-lg"
+                            style={{ left: '-12px' }}
+                            title="Collapse Sidebar"
                         >
+                            <PanelLeftClose size={12} />
                         </button>
                     )}
                 </div>
