@@ -1,5 +1,41 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Authentication Setup (Clerk)
+
+This project uses [Clerk](https://clerk.com/) for authentication. Follow these steps to set it up:
+
+### 1. Create a Clerk Account
+
+1. Go to [https://clerk.com/](https://clerk.com/) and sign up
+2. Create a new application in the Clerk Dashboard
+3. Navigate to **API Keys** in your Clerk Dashboard
+
+### 2. Configure Environment Variables
+
+Create a `.env.local` file in the root directory (this file is gitignored):
+
+```bash
+cp .env.local.example .env.local
+```
+
+Then edit `.env.local` and replace the placeholder values with your actual Clerk keys:
+
+```bash
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_actual_key_here
+CLERK_SECRET_KEY=sk_test_your_actual_secret_here
+```
+
+**Important:** Never commit your actual keys to version control. The `.env.local` file is already in `.gitignore`.
+
+### 3. Clerk is Already Integrated
+
+The following files have been configured for Clerk:
+
+- `middleware.ts` - Clerk middleware using `clerkMiddleware()`
+- `app/layout.tsx` - Wrapped with `<ClerkProvider>`
+- `app/page.tsx` - Navigation with `<SignInButton>`, `<SignUpButton>`, and `<UserButton>`
+
+
 ## Getting Started
 
 First, run the development server:

@@ -2,15 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   SiBinance, SiCoinbase, SiOkx, SiBitcoin, SiEthereum,
   SiSolana, SiTether, SiCardano, SiDogecoin
 } from 'react-icons/si';
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 import ColorBends from "@/components/ColorBends";
 import LogoLoop from "@/components/LogoLoop";
 import MagicBento from "@/components/MagicBento";
 import ScrambledText from "@/components/ScrambledText";
+import AuthDialog from "@/components/AuthDialog";
+import UserMenu from "@/components/UserMenu";
 
 const exchangeLogos = [
   { node: <SiBinance size={60} />, title: "Binance" },
@@ -51,17 +55,27 @@ const bentoFeatures = [
   }
 ];
 
+import { useSearchParams } from "next/navigation";
+
 export default function OpenFluxLanding() {
   const [mounted, setMounted] = useState(false);
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (searchParams.get('openAuth') === 'true') {
+      setAuthDialogOpen(true);
+    }
+  }, [searchParams]);
 
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-[#060010] font-sans overflow-x-hidden selection:bg-white/10 text-white">
+      {/* Auth Dialog */}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+
       {/* 1. Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#060010]/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
@@ -70,23 +84,34 @@ export default function OpenFluxLanding() {
           </div>
 
           <div className="flex items-center gap-8">
-            <button className="text-xs font-normal text-white/40 hover:text-white transition-colors">
-              Login
-            </button>
-            <button className="px-6 py-2 bg-white text-[#060010] text-xs font-normal rounded-full hover:bg-white/90 transition-all">
-              Start Free
-            </button>
+            <SignedOut>
+              <button
+                onClick={() => setAuthDialogOpen(true)}
+                className="text-ls font-normal text-white/40 hover:text-white transition-colors"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setAuthDialogOpen(true)}
+                className="px-6 py-2 bg-white text-[#060010] text-ls font-normal rounded-full hover:bg-white/90 transition-all"
+              >
+                Start Free
+              </button>
+            </SignedOut>
+            <SignedIn>
+              <UserMenu />
+            </SignedIn>
           </div>
         </div>
       </nav>
 
       <main className="relative pt-48">
         <section className="px-6 max-w-5xl mx-auto flex flex-col items-center text-center relative mb-40">
-          <div style={{  position: 'absolute', zIndex: 0 }}>
+          <div style={{ position: 'absolute', zIndex: 0 }}>
             <ColorBends
               rotation={0}
               speed={0.2}
-              colors={["#ff0a0a","#00ff04","#2b00ff"]}
+              colors={["#ff0a0a", "#00ff04", "#2b00ff"]}
               transparent
               autoRotate={0}
               scale={1}
@@ -96,7 +121,7 @@ export default function OpenFluxLanding() {
               parallax={0.5}
               noise={0.1}
             />
-        </div>
+          </div>
           <h1 className="font-tasa font-normal text-4xl md:text-6xl lg:text-7xl mb-8 tracking-tight leading-[1.1] text-white max-w-4xl">
             Quantitative trading, <br />
             <span className="text-white/40">Simplified for humans.</span>
