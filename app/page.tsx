@@ -15,6 +15,9 @@ import MagicBento from "@/components/MagicBento";
 import ScrambledText from "@/components/ScrambledText";
 import AuthDialog from "@/components/AuthDialog";
 import UserMenu from "@/components/UserMenu";
+import LiveDemo from "@/components/LiveDemo";
+import WhyOpenFlux from "@/components/WhyOpenFlux";
+import Testimonials from "@/components/Testimonials";
 
 const exchangeLogos = [
   { node: <SiBinance size={60} />, title: "Binance" },
@@ -77,23 +80,23 @@ export default function OpenFluxLanding() {
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
 
       {/* 1. Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-[#060010]/50 backdrop-blur-md">
+      <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-gradient-to-b from-[#060010] via-[#060010]/80 to-transparent backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/flux.svg" alt="OpenFlux" width={100} height={35} className="h-7 w-auto brightness-200" />
           </div>
 
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             <SignedOut>
               <button
                 onClick={() => setAuthDialogOpen(true)}
-                className="text-ls font-normal text-white/40 hover:text-white transition-colors"
+                className="text-sm font-normal text-white/50 hover:text-white transition-colors duration-200"
               >
                 Login
               </button>
               <button
                 onClick={() => setAuthDialogOpen(true)}
-                className="px-6 py-2 bg-white text-[#060010] text-ls font-normal rounded-full hover:bg-white/90 transition-all"
+                className="px-6 py-2.5 bg-white text-[#060010] text-sm font-semibold rounded-full hover:bg-emerald-300 transition-all duration-200 hover:scale-105 hover:shadow-lg"
               >
                 Start Free
               </button>
@@ -106,45 +109,53 @@ export default function OpenFluxLanding() {
       </nav>
 
       <main className="relative pt-48">
-        <section className="px-6 max-w-5xl mx-auto flex flex-col items-center text-center relative mb-40">
-          <div style={{ position: 'absolute', zIndex: 0 }}>
+        <section className="px-6 max-w-7xl mx-auto flex flex-col items-center text-center relative h-screen flex-justify-center">
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, overflow: 'hidden' }}>
             <ColorBends
               rotation={0}
-              speed={0.2}
+              speed={0.15}
               colors={["#ff0a0a", "#00ff04", "#2b00ff"]}
               transparent
               autoRotate={0}
-              scale={1}
+              scale={2.8}
               frequency={1}
-              warpStrength={1}
-              mouseInfluence={1}
+              warpStrength={1.2}
+              mouseInfluence={0.8}
               parallax={0.5}
-              noise={0.1}
+              noise={0.08}
             />
           </div>
-          <h1 className="font-tasa font-normal text-4xl md:text-6xl lg:text-7xl mb-8 tracking-tight leading-[1.1] text-white max-w-4xl">
-            Quantitative trading, <br />
-            <span className="text-white/40">Simplified for humans.</span>
-          </h1>
+          <div className="relative z-10 flex flex-col justify-center h-full w-full">
+            <h1 className="font-tasa font-normal text-5xl md:text-6xl lg:text-8xl mb-6 tracking-tight leading-[1.0] text-white max-w-5xl mx-auto text-balance">
+              Quantitative trading, <br />
+              <span className="bg-gradient-to-r from-emerald-400 via-white to-emerald-300 bg-clip-text text-transparent">simplified for humans</span>.
+            </h1>
 
-          <p className="text-sm md:text-base text-white/30 max-w-xl mb-12 font-light leading-relaxed">
-            The world’s first natural language backtesting engine for crypto. <br />
-            No math, no code—just the flow of logic
-          </p>
+            <p className="text-base md:text-lg text-white/50 max-w-2xl mx-auto mb-12 font-light leading-relaxed text-balance">
+              The world's first natural language backtesting engine for crypto. No math, no code—just the flow of logic.
+            </p>
 
-          <div className="flex items-center gap-4">
-            <button className="px-10 py-4 bg-white text-[#060010] rounded-full font-normal text-sm hover:scale-[1.02] transition-transform">
-              Get Started
-            </button>
-            <button className="px-10 py-4 border border-white/5 rounded-full font-normal text-sm hover:bg-white/5 transition-colors">
-              Documentation
-            </button>
+            <div className="flex items-center justify-center gap-4">
+              <button className="px-8 py-4 bg-white text-[#060010] rounded-full font-semibold text-base hover:bg-emerald-300 transition-all hover:scale-105 shadow-lg hover:shadow-xl">
+                Get Started
+              </button>
+              <Link href="/dashboard" className="px-8 py-4 border border-white/20 rounded-full font-semibold text-base text-white hover:bg-white/10 transition-all hover:border-white/40">
+                Dashboard
+              </Link>
+            </div>
+
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+              <svg className="w-6 h-6 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
           </div>
         </section>
 
         {/* 3. Logo Loop (Crypto Exchanges) */}
-        <section className="py-20 relative border-y border-white/5">
+        <section className="py-20 relative border-y border-white/5 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent">
           <div className="max-w-7xl mx-auto">
+            <p className="text-center text-white/40 text-xs uppercase tracking-widest font-semibold mb-8">Integrated with major exchanges</p>
             <LogoLoop
               logos={exchangeLogos}
               speed={30}
@@ -154,7 +165,7 @@ export default function OpenFluxLanding() {
               pauseOnHover={true}
               fadeOut={true}
               fadeOutColor="#060010"
-              className="opacity-20 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700"
+              className="opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-500"
             />
           </div>
         </section>
@@ -189,88 +200,136 @@ export default function OpenFluxLanding() {
             enableTilt={true}
             enableMagnetism={true}
             clickEffect
-            spotlightRadius={400}
-            particleCount={20}
-            glowColor="255, 255, 255"
+            spotlightRadius={600}
+            particleCount={35}
+            glowColor="16, 185, 129"
           />
         </section>
 
+        {/* Live Demo Section */}
+        <LiveDemo />
+
+        {/* Why OpenFlux */}
+        <WhyOpenFlux />
+
+        {/* Testimonials */}
+        <Testimonials />
+
         {/* Pricing Section */}
-        <section className="px-6 py-40 max-w-7xl mx-auto">
+        <section className="px-6 py-40 max-w-7xl mx-auto relative">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-tasa text-white mb-4">Transparent Pricing.</h2>
-            <p className="text-white/40 font-light">Built for traders, by traders.</p>
+            <div className="inline-block mb-4 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <span className="text-emerald-400 text-sm font-semibold">Simple & Transparent</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-tasa text-white mb-6 text-balance">Fair pricing for all traders.</h2>
+            <p className="text-lg text-white/50 font-light">No hidden fees. Cancel anytime.</p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-6 px-4 text-white/40 font-normal uppercase text-xs tracking-widest">Feature</th>
-                  <th className="py-6 px-4 text-white font-normal uppercase text-xs tracking-widest">Free</th>
-                  <th className="py-6 px-4 text-white font-normal uppercase text-xs tracking-widest">Pro</th>
-                  <th className="py-6 px-4 text-white font-normal uppercase text-xs tracking-widest">Pro+</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm font-light text-white/60">
-                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-4 text-white">Backtests</td>
-                  <td className="py-6 px-4">3 per month</td>
-                  <td className="py-6 px-4">Unlimited</td>
-                  <td className="py-6 px-4">Unlimited</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-4 text-white">Historical Depth</td>
-                  <td className="py-6 px-4">1 Year</td>
-                  <td className="py-6 px-4">5 Years</td>
-                  <td className="py-6 px-4">Full History</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-4 text-white">Strategy Doctor</td>
-                  <td className="py-6 px-4">Basic</td>
-                  <td className="py-6 px-4">Advanced</td>
-                  <td className="py-6 px-4">Real-time suggestions</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-4 text-white">Alerts</td>
-                  <td className="py-6 px-4">Browser</td>
-                  <td className="py-6 px-4">Email / SMS</td>
-                  <td className="py-6 px-4">Webhooks & Telegram</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                  <td className="py-6 px-4 text-white">Monthly Price</td>
-                  <td className="py-6 px-4">$0</td>
-                  <td className="py-6 px-4">$49</td>
-                  <td className="py-6 px-4">$99</td>
-                </tr>
-                <tr>
-                  <td className="py-6 px-4 text-white">Yearly Price</td>
-                  <td className="py-6 px-4">$0</td>
-                  <td className="py-6 px-4">$39</td>
-                  <td className="py-6 px-4">$79</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {/* Free Plan */}
+            <div className="border border-white/10 rounded-lg bg-white/[0.02] backdrop-blur-sm p-8">
+              <h3 className="text-xl font-semibold text-white mb-2">Starter</h3>
+              <p className="text-white/50 text-sm mb-6">Perfect for learning</p>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$0</span>
+                <span className="text-white/40">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> 3 backtests/month
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> 1 year historical data
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> Basic risk analysis
+                </li>
+              </ul>
+              <button className="w-full px-6 py-3 border border-white/10 text-white rounded-full hover:bg-white/5 transition-colors">
+                Get Started
+              </button>
+            </div>
+
+            {/* Pro Plan - Featured */}
+            <div className="border border-emerald-500/30 rounded-lg bg-gradient-to-br from-emerald-500/10 to-white/[0.02] backdrop-blur-sm p-8 relative ring-1 ring-emerald-500/20">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs font-semibold">
+                Most Popular
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Professional</h3>
+              <p className="text-white/50 text-sm mb-6">For active traders</p>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$49</span>
+                <span className="text-white/40">/month</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> Unlimited backtests
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> 5 years historical data
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> AI risk detection
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> Email alerts
+                </li>
+              </ul>
+              <button className="w-full px-6 py-3 bg-emerald-500 text-white rounded-full hover:bg-emerald-600 transition-colors font-semibold">
+                Start Free Trial
+              </button>
+            </div>
+
+            {/* Pro+ Plan */}
+            <div className="border border-white/10 rounded-lg bg-white/[0.02] backdrop-blur-sm p-8">
+              <h3 className="text-xl font-semibold text-white mb-2">Enterprise</h3>
+              <p className="text-white/50 text-sm mb-6">For firms & funds</p>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">Custom</span>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> Full historical data
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> White-label options
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> Dedicated support
+                </li>
+                <li className="flex items-center gap-3 text-white/70">
+                  <span className="text-emerald-400">✓</span> API access
+                </li>
+              </ul>
+              <button className="w-full px-6 py-3 border border-white/10 text-white rounded-full hover:bg-white/5 transition-colors">
+                Contact Sales
+              </button>
+            </div>
           </div>
         </section>
 
       </main>
 
-      <footer className="px-6 py-20 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="opacity-20 flex items-center gap-4">
-            <Image src="/flux.svg" alt="OpenFlux" width={80} height={20} className="h-4 w-auto brightness-200" />
-            <span className="text-[10px] text-white/40 tracking-widest uppercase font-light">Institutional Alpha</span>
+      <footer className="px-6 py-20 border-t border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 mb-12">
+            <div className="opacity-40 flex items-center gap-4">
+              <Image src="/flux.svg" alt="OpenFlux" width={80} height={20} className="h-4 w-auto brightness-200" />
+              <span className="text-[10px] text-white/40 tracking-widest uppercase font-light">Institutional Alpha</span>
+            </div>
+            <div className="flex gap-8 text-[10px] font-normal text-white/40 uppercase tracking-[0.2em]">
+              <Link href="/dashboard" className="hover:text-emerald-400 transition-colors">Dashboard</Link>
+              <a href="#" className="hover:text-white transition-colors">Sitemap</a>
+              <a href="#" className="hover:text-white transition-colors">Security</a>
+              <a href="#" className="hover:text-white transition-colors">API Docs</a>
+              <a href="#" className="hover:text-white transition-colors">Twitter (X)</a>
+            </div>
           </div>
-          <div className="flex gap-12 text-[10px] font-normal text-white/20 uppercase tracking-[0.2em]">
-            <a href="#" className="hover:text-white transition-colors">Sitemap</a>
-            <a href="#" className="hover:text-white transition-colors">Security</a>
-            <a href="#" className="hover:text-white transition-colors">API Docs</a>
-            <a href="#" className="hover:text-white transition-colors">Twitter (X)</a>
+          <div className="border-t border-white/5 pt-8">
+            <p className="text-[10px] font-normal text-white/10 uppercase tracking-widest text-center">
+              © 2026 OPENFLUX • ALL RIGHTS RESERVED
+            </p>
           </div>
-          <p className="text-[10px] font-normal text-white/10 uppercase tracking-widest">
-            © 2026 OPENFLUX • ALL RIGHTS RESERVED
-          </p>
         </div>
       </footer>
     </div>
