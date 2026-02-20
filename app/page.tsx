@@ -7,14 +7,11 @@ import {
   SiBinance, SiCoinbase, SiOkx, SiBitcoin, SiEthereum,
   SiSolana, SiTether, SiCardano, SiDogecoin
 } from 'react-icons/si';
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 
 import ColorBends from "@/components/ColorBends";
 import LogoLoop from "@/components/LogoLoop";
 import MagicBento from "@/components/MagicBento";
 import ScrambledText from "@/components/ScrambledText";
-import AuthDialog from "@/components/AuthDialog";
-import UserMenu from "@/components/UserMenu";
 import LiveDemo from "@/components/LiveDemo";
 import WhyOpenFlux from "@/components/WhyOpenFlux";
 import Testimonials from "@/components/Testimonials";
@@ -76,76 +73,92 @@ export default function OpenFluxLanding() {
 
   return (
     <div className="min-h-screen bg-[#060010] font-sans overflow-x-hidden selection:bg-white/10 text-white">
-      {/* Auth Dialog */}
-      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+      {/* Simple Auth Dialog */}
+      {authDialogOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-[#060010] border border-white/10 rounded-2xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-tasa text-white mb-4">Welcome to OpenFlux</h2>
+            <p className="text-white/60 mb-6">Enter your email to get started or continue to the dashboard.</p>
+            <input type="email" placeholder="your@email.com" className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 mb-4" />
+            <button className="w-full px-6 py-3 bg-white text-[#060010] font-semibold rounded-full hover:bg-emerald-300 transition-all mb-3">
+              Continue
+            </button>
+            <button onClick={() => setAuthDialogOpen(false)} className="w-full px-6 py-3 border border-white/20 text-white rounded-full hover:bg-white/5 transition-all">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 1. Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-[100] border-b border-white/5 bg-gradient-to-b from-[#060010] via-[#060010]/80 to-transparent backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image src="/flux.svg" alt="OpenFlux" width={100} height={35} className="h-7 w-auto brightness-200" />
-          </div>
+          </Link>
 
           <div className="flex items-center gap-6">
-            <SignedOut>
-              <button
-                onClick={() => setAuthDialogOpen(true)}
-                className="text-sm font-normal text-white/50 hover:text-white transition-colors duration-200"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => setAuthDialogOpen(true)}
-                className="px-6 py-2.5 bg-white text-[#060010] text-sm font-semibold rounded-full hover:bg-emerald-300 transition-all duration-200 hover:scale-105 hover:shadow-lg"
-              >
-                Start Free
-              </button>
-            </SignedOut>
-            <SignedIn>
-              <UserMenu />
-            </SignedIn>
+            <button
+              onClick={() => setAuthDialogOpen(true)}
+              className="text-sm font-normal text-white/50 hover:text-white transition-colors duration-200"
+            >
+              Login
+            </button>
+            <Link
+              href="/dashboard"
+              className="px-6 py-2.5 bg-white text-[#060010] text-sm font-semibold rounded-full hover:bg-emerald-300 transition-all duration-200 hover:scale-105 hover:shadow-lg"
+            >
+              Dashboard
+            </Link>
           </div>
         </div>
       </nav>
 
       <main className="relative pt-48">
-        <section className="px-6 max-w-7xl mx-auto flex flex-col items-center text-center relative h-screen flex-justify-center">
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, overflow: 'hidden' }}>
+        <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden pt-20">
+          {/* ColorBends Background */}
+          <div className="absolute inset-0 top-0 left-0 right-0 bottom-0 z-0">
             <ColorBends
               rotation={0}
-              speed={0.15}
-              colors={["#ff0a0a", "#00ff04", "#2b00ff"]}
+              speed={0.12}
+              colors={["#10b981", "#06b6d4", "#8b5cf6"]}
               transparent
               autoRotate={0}
-              scale={2.8}
-              frequency={1}
-              warpStrength={1.2}
-              mouseInfluence={0.8}
+              scale={3}
+              frequency={0.8}
+              warpStrength={1.5}
+              mouseInfluence={0.6}
               parallax={0.5}
-              noise={0.08}
+              noise={0.12}
             />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#060010]" />
           </div>
-          <div className="relative z-10 flex flex-col justify-center h-full w-full">
-            <h1 className="font-tasa font-normal text-5xl md:text-6xl lg:text-8xl mb-6 tracking-tight leading-[1.0] text-white max-w-5xl mx-auto text-balance">
-              Quantitative trading, <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-white to-emerald-300 bg-clip-text text-transparent">simplified for humans</span>.
+
+          {/* Content */}
+          <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 text-center">
+            <div className="mb-8 inline-block">
+              <span className="text-sm font-semibold text-emerald-400 uppercase tracking-widest">The Future of Trading</span>
+            </div>
+
+            <h1 className="font-tasa font-normal text-6xl md:text-7xl lg:text-8xl mb-8 tracking-tight leading-[0.95] text-white text-balance">
+              Backtest in plain English.
             </h1>
 
-            <p className="text-base md:text-lg text-white/50 max-w-2xl mx-auto mb-12 font-light leading-relaxed text-balance">
-              The world's first natural language backtesting engine for crypto. No math, no code—just the flow of logic.
+            <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto mb-12 font-light leading-relaxed">
+              No code. No math. Just describe your strategy and get validated returns in seconds. OpenFlux turns words into winning trades.
             </p>
 
-            <div className="flex items-center justify-center gap-4">
-              <button className="px-8 py-4 bg-white text-[#060010] rounded-full font-semibold text-base hover:bg-emerald-300 transition-all hover:scale-105 shadow-lg hover:shadow-xl">
-                Get Started
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <button onClick={() => setAuthDialogOpen(true)} className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-semibold text-base transition-all hover:scale-105 shadow-lg">
+                Start Free
               </button>
-              <Link href="/dashboard" className="px-8 py-4 border border-white/20 rounded-full font-semibold text-base text-white hover:bg-white/10 transition-all hover:border-white/40">
-                Dashboard
+              <Link href="/dashboard" className="px-8 py-4 border border-white/30 hover:border-white/60 rounded-full font-semibold text-base text-white hover:bg-white/10 transition-all">
+                Live Demo
               </Link>
             </div>
 
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-              <svg className="w-6 h-6 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="animate-bounce">
+              <svg className="w-6 h-6 text-white/30 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
             </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useUser } from '@clerk/nextjs';
+import Link from 'next/link';
 import {
     Paperclip,
     ArrowUp,
@@ -42,7 +42,6 @@ type Message = {
 };
 
 export default function DashboardPage() {
-    const { user } = useUser();
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
@@ -67,6 +66,8 @@ export default function DashboardPage() {
         else if (hour < 18) setGreeting('Good afternoon');
         else setGreeting('Good evening');
     }, []);
+
+    const userName = 'Trader';
 
     // Auto-resize textarea
     useEffect(() => {
@@ -184,8 +185,6 @@ export default function DashboardPage() {
         }
     };
 
-    if (!user) return null;
-
     /* Suggestion Cards */
     const Suggestions = () => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl px-4 mt-12">
@@ -218,8 +217,14 @@ export default function DashboardPage() {
                 <div className="min-h-full flex flex-col pb-6">
                     {messages.length === 0 ? (
                         <div className="flex-1 flex flex-col items-center justify-center -mt-20">
+                            <Link href="/" className="absolute top-6 left-6 text-white/50 hover:text-white transition-colors flex items-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Back
+                            </Link>
                             <h2 className="text-2xl font-medium text-[#ECECEC] mb-2 font-tasa animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                {greeting || 'Hello'}, {user.firstName}
+                                {greeting || 'Hello'}, {userName}
                             </h2>
                             <p className="text-[#888888] text-center max-w-md mb-8 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
                                 Ready to mine new strategies?
